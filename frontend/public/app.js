@@ -60,8 +60,9 @@ class Application {
 
         let data = {
             text: form.text.value,
-            uppercase: form.uppercase.checked,
-            reverse: form.reverse.checked,
+            stock: form.stock.value,
+            uppercase: false,
+            reverse: false,
         };
 
         let json = JSON.stringify(data);
@@ -70,59 +71,13 @@ class Application {
         request.send(json);
 
         form.text.value = "";
+        form.stock.value = "";
     }
 
     renderResponses() {
-        if (this.data.requestIds.length === 0) {
-            return;
-        }
-
-        console.log("Rendering responses");
-
-        let div = gesso.createDiv(null, "#responses");
-
-        for (let requestId of this.data.requestIds.reverse()) {
-            let response = this.data.responses[requestId];
-
-            if (response == null) {
-                continue;
-            }
-
-            let item = gesso.createDiv(div, "response");
-            gesso.createDiv(item, "worker", response.workerId);
-            gesso.createDiv(item, "text", response.text);
-        }
-
-        gesso.replaceElement($("#responses"), div);
     }
 
     renderWorkers() {
         console.log("Rendering workers");
-
-        if (Object.keys(this.data.workers).length === 0) {
-            let div = gesso.createDiv(null, "#workers");
-            let span = gesso.createSpan(div, "placeholder", "None");
-
-            gesso.replaceElement($("#workers"), div);
-
-            return;
-        }
-
-        let headings = ["ID", "Updated", "Requests processed", "Processing errors"];
-        let rows = [];
-        let now = new Date().getTime();
-
-        for (let workerId in this.data.workers) {
-            let update = this.data.workers[workerId];
-            let time = new Date(update.timestamp).toLocaleString();
-            let requestsProcessed = update.requestsProcessed;
-            let processingErrors = update.processingErrors;
-
-            rows.push([workerId, time, requestsProcessed, processingErrors]);
-        }
-
-        let table = gesso.createTable(null, headings, rows, {id: "workers"});
-
-        gesso.replaceElement($("#workers"), table);
     }
 }

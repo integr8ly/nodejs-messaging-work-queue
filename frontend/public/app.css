@@ -293,12 +293,6 @@ span.placeholder {
     margin: 0;
 }
 
-#requests > input[name="text"] {
-    grid-area: t;
-    width: 100%;
-    padding: 0.2em 0.4em;
-}
-
 #requests input[type="checkbox"] {
     margin-right: 0.4em;
 }
