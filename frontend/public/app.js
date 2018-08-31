@@ -60,7 +60,7 @@ class Application {
 
         let data = {
             text: form.text.value,
-            stock: form.stock.value,
+            stock: 0,
             uppercase: false,
             reverse: false,
         };
@@ -71,7 +71,6 @@ class Application {
         request.send(json);
 
         form.text.value = "";
-        form.stock.value = "";
     }
 
     renderResponses() {
