@@ -134,11 +134,7 @@ probe(app);
 app.post('/api/send-request', (req, resp) => {
   const message = {
     message_id: id + '/' + requestSequence++,
-    application_properties: {
-      uppercase: req.body.uppercase,
-      reverse: req.body.reverse
-    },
-    body: JSON.stringify({type:req.body.text, stock: req.body.stock})
+    body: JSON.stringify({type:req.body.text})
   };
 
   requestMessages.push(message);

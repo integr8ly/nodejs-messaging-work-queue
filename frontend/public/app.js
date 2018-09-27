@@ -59,10 +59,7 @@ class Application {
         });
 
         let data = {
-            text: form.text.value,
-            stock: 0,
-            uppercase: false,
-            reverse: false,
+            text: form.text.value
         };
 
         let json = JSON.stringify(data);
