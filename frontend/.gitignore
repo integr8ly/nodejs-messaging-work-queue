@@ -6,3 +6,4 @@ tmp/
 Thumbs.db
 
 /npm-debug.log
+.idea/
