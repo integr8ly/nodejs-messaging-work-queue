@@ -43,11 +43,13 @@ const requestMessages = [];
 const requestIds = [];
 const responses = {};
 const workers = {};
-
+let connectionOpenedEvent;
 let requestSequence = 0;
 
 function sendRequests () {
-  if (!responseReceiver) {
+  if (!responseReceiver || !responseReceiver.source || !responseReceiver.source.address || !requestSender.sendable()) {
+    console.log('>>>>>', "in sendrequest() if");
+    openSenderAndReceiver();
     return;
   }
 
@@ -61,12 +63,18 @@ function sendRequests () {
   }
 }
 
-container.on('connection_open', event => {
-  console.log(`${id}: Connected to AMQP messaging service at ${amqpHost}:${amqpPort}`);
+const openSenderAndReceiver = function() {
+  console.log('Trying to open sender and receiver');
+  requestSender = connectionOpenedEvent.connection.open_sender('work-queue/requests');
+  responseReceiver = connectionOpenedEvent.connection.open_receiver({source: {dynamic: true}});
 
-  requestSender = event.connection.open_sender('work-queue/requests');
-  responseReceiver = event.connection.open_receiver({source: {dynamic: true}});
-  workerUpdateReceiver = event.connection.open_receiver('work-queue/worker-updates');
+  // workerUpdateReceiver = connectionOpenedEvent.connection.open_receiver('work-queue/worker-updates');
+};
+
+container.on('connection_open', event => {
+  connectionOpenedEvent = event;
+  console.log(`${id}: Connected to AMQP messaging service at ${amqpHost}:${amqpPort}`);
+  openSenderAndReceiver()
 });
 
 container.on('sendable', () => {
@@ -108,7 +116,7 @@ const opts = {
 };
 
 container.on('error', err => {
-  console.log(err);
+  console.log(`${id}: ${err}`);
 });
 
 console.log(`${id}: Attempting to connect to AMQP messaging service at ${amqpHost}:${amqpPort}`);
@@ -129,6 +137,12 @@ app.use('/api/greeting', (request, response) => {
   response.send({content: `Hello, ${name || 'World!'}`});
 });
 
+app.use('/get_sender', function(req, res) {
+  openSenderAndReceiver();
+  res.send('ok')
+});
+
+
 probe(app);
 
 app.post('/api/send-request', (req, resp) => {
@@ -147,6 +161,11 @@ app.post('/api/send-request', (req, resp) => {
 
 app.get('/api/data', (req, resp) => {
   resp.json({requestIds, responses, workers});
+});
+
+app.use('get_sender', function(req, res) {
+  openSenderAndReceiver();
+  res.send('ok')
 });
 
 module.exports = app;

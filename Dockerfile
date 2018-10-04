@@ -4,6 +4,7 @@ ADD . ./messaging-app
 
 WORKDIR ./messaging-app/frontend
 
+
 RUN npm i
 
 CMD ["node", "."]
