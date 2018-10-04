@@ -48,6 +48,7 @@ let requestSequence = 0;
 
 function sendRequests () {
   if (!responseReceiver || !responseReceiver.source || !responseReceiver.source.address || !requestSender.sendable()) {
+    console.log('>>>>>', "in sendrequest() if");
     openSenderAndReceiver();
     return;
   }
@@ -67,7 +68,7 @@ const openSenderAndReceiver = function() {
   requestSender = connectionOpenedEvent.connection.open_sender('work-queue/requests');
   responseReceiver = connectionOpenedEvent.connection.open_receiver({source: {dynamic: true}});
 
-  workerUpdateReceiver = connectionOpenedEvent.connection.open_receiver('work-queue/worker-updates');
+  // workerUpdateReceiver = connectionOpenedEvent.connection.open_receiver('work-queue/worker-updates');
 };
 
 container.on('connection_open', event => {
@@ -136,7 +137,7 @@ app.use('/api/greeting', (request, response) => {
   response.send({content: `Hello, ${name || 'World!'}`});
 });
 
-app.use('get_sender', function(req, res) {
+app.use('/get_sender', function(req, res) {
   openSenderAndReceiver();
   res.send('ok')
 });
