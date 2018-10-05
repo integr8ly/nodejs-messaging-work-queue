@@ -43,34 +43,65 @@ const requestMessages = [];
 const requestIds = [];
 const responses = {};
 const workers = {};
-
+let connectionOpenedEvent;
 let requestSequence = 0;
+let ableToSend = false;
 
 function sendRequests () {
-  if (!responseReceiver) {
+  console.log('Sending request');
+  if (!responseReceiver ) {
+    console.log("no receiver, returning early");
     return;
   }
 
+  if (!requestSender.sendable() || !responseReceiver.source || !responseReceiver.source.address){
+    console.log('Toggle connection OFF/ON' );
+    connectionOpenedEvent.connection.close();
+  }
+
   while (requestSender.sendable() && requestMessages.length > 0) {
-    const message = requestMessages.shift();
-    message.reply_to = responseReceiver.source.address;
+    console.log(`sending messages, msg countdown: ${requestMessages.length}`);
+    try {
+      const message = requestMessages.shift();
+      message.reply_to = responseReceiver.source.address;
 
-    requestSender.send(message);
-
-    console.log(`${id}: Sent request ${JSON.stringify(message)}`);
+      requestSender.send(message);
+      console.log(`${id}: Sent request ${JSON.stringify(message)}`);
+      ableToSend = true;
+    } catch (err){
+      console.log(`${id}: ${err}`);
+    }
   }
 }
 
-container.on('connection_open', event => {
-  console.log(`${id}: Connected to AMQP messaging service at ${amqpHost}:${amqpPort}`);
+const openSenderAndReceiver = function() {
+  console.log('Trying to open sender and receiver');
+  requestSender = connectionOpenedEvent.connection.open_sender('work-queue/requests');
 
-  requestSender = event.connection.open_sender('work-queue/requests');
-  responseReceiver = event.connection.open_receiver({source: {dynamic: true}});
-  workerUpdateReceiver = event.connection.open_receiver('work-queue/worker-updates');
+  if (!responseReceiver){
+    responseReceiver = connectionOpenedEvent.connection.open_receiver({source: {dynamic: true}});
+  }
+  if (requestSender.sendable() && requestMessages.length > 0){
+    sendRequests();
+  }
+};
+
+container.on('connection_open', event => {
+  connectionOpenedEvent = event;
+  console.log(`${id}: Connected to AMQP messaging service at ${amqpHost}:${amqpPort}`);
+  console.log("on connection open");
+  openSenderAndReceiver()
+});
+
+container.on('connection_close', event => {
+  console.log('connection_close');
+  connectionOpenedEvent.connection.open();
 });
 
 container.on('sendable', () => {
-  sendRequests();
+  if (responseReceiver && responseReceiver.source && responseReceiver.source.address) {
+    sendRequests();
+  }
 });
 
 container.on('message', event => {
@@ -108,7 +139,7 @@ const opts = {
 };
 
 container.on('error', err => {
-  console.log(err);
+  console.log(`${id}: ${err}`);
 });
 
 console.log(`${id}: Attempting to connect to AMQP messaging service at ${amqpHost}:${amqpPort}`);
