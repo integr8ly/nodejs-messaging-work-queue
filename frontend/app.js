@@ -37,7 +37,6 @@ const container = rhea.create_container({id});
 
 let requestSender = null;
 let responseReceiver = null;
-let workerUpdateReceiver = null;
 
 const requestMessages = [];
 const requestIds = [];
@@ -66,7 +65,6 @@ container.on('connection_open', event => {
 
   requestSender = event.connection.open_sender('work-queue-requests');
   responseReceiver = event.connection.open_receiver({source: {dynamic: true}});
-  workerUpdateReceiver = event.connection.open_receiver('work-queue-worker-updates');
 });
 
 container.on('sendable', () => {
@@ -74,19 +72,6 @@ container.on('sendable', () => {
 });
 
 container.on('message', event => {
-  if (event.receiver === workerUpdateReceiver) {
-    const update = event.message.application_properties;
-
-    workers[update.workerId] = {
-      workerId: update.workerId,
-      timestamp: update.timestamp,
-      requestsProcessed: update.requestsProcessed,
-      processingErrors: update.processingErrors
-    };
-
-    return;
-  }
-
   if (event.receiver === responseReceiver) {
     const response = event.message;
 
