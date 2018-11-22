@@ -24,6 +24,7 @@ const bodyParser = require('body-parser');
 const express = require('express');
 const probe = require('kube-probe');
 const rhea = require('rhea');
+const cluster = require('cluster');
 
 // AMQP
 
@@ -93,7 +94,9 @@ const opts = {
 };
 
 container.on('error', err => {
-  console.log(err);
+  console.error(err);
+  console.error(`Exiting worker with status 100`);
+  process.exit(100);
 });
 
 console.log(`${id}: Attempting to connect to AMQP messaging service at ${amqpHost}:${amqpPort}`);
