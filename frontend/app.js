@@ -24,7 +24,6 @@ const bodyParser = require('body-parser');
 const express = require('express');
 const probe = require('kube-probe');
 const rhea = require('rhea');
-const cluster = require('cluster');
 
 // AMQP
 
@@ -36,54 +35,23 @@ const amqpPassword = process.env.MESSAGING_SERVICE_PASSWORD || 'work-queue';
 const id = 'frontend-nodejs-' + crypto.randomBytes(2).toString('hex');
 const container = rhea.create_container({id});
 
-let requestSender = null;
-let responseReceiver = null;
+let connection = null;
 
-const requestMessages = [];
 const requestIds = [];
 const responses = {};
 const workers = {};
 
 let requestSequence = 0;
 
-function sendRequests () {
-  if (!responseReceiver) {
-    return;
-  }
-
-  while (requestSender.sendable() && requestMessages.length > 0) {
-    const message = requestMessages.shift();
-    message.reply_to = responseReceiver.source.address;
-
-    requestSender.send(message);
-
+function sendRequest (message) {
+    message.to = 'work-queue-requests';
+    connection.send(message);
     console.log(`${id}: Sent request ${JSON.stringify(message)}`);
-  }
 }
 
 container.on('connection_open', event => {
   console.log(`${id}: Connected to AMQP messaging service at ${amqpHost}:${amqpPort}`);
-
-  requestSender = event.connection.open_sender('work-queue-requests');
-  responseReceiver = event.connection.open_receiver({source: {dynamic: true}});
-});
-
-container.on('sendable', () => {
-  sendRequests();
-});
-
-container.on('message', event => {
-  if (event.receiver === responseReceiver) {
-    const response = event.message;
-
-    console.log(`${id}: Received response ${response}`);
-
-    responses[response.correlation_id] = {
-      requestId: response.correlation_id,
-      workerId: response.application_properties.workerId,
-      text: response.body
-    };
-  }
+  connection = event.connection;
 });
 
 const opts = {
@@ -129,10 +97,9 @@ app.post('/api/send-request', (req, resp) => {
     body: JSON.stringify({type:req.body.text, stock: req.body.stock})
   };
 
-  requestMessages.push(message);
   requestIds.push(message.message_id);
 
-  sendRequests();
+  sendRequest(message);
 
   resp.status(202).send(message.message_id);
 });
