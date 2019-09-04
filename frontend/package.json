@@ -1,6 +1,6 @@
 {
    "name": "nodejs-messaging-work-queue-frontend",
-   "version": "3.0.1",
+   "version": "4.0.0",
    "description": "A sample Node.js app that sends requests",
    "license": "Apache-2.0",
    "scripts": {
