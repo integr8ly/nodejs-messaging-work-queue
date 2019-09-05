@@ -19,31 +19,14 @@
       <div id="-body-content">
         <h1>Messaging Work Queue</h1>
 
-        <h2>Requests</h2>
+        <h2>Add Fruit</h2>
 
         <form id="requests" method="post" action="javascript:void(0);">
-          <input id="request-text" type="text" name="text" autofocus="autofocus"/>
-
-          <div id="request-uppercase-option">
-            <input id="request-uppercase" type="checkbox" name="uppercase" checked="checked"/>
-            <label for="request-uppercase">Uppercase</label>
-          </div>
-
-          <div id="request-reverse-option">
-            <input id="request-reverse" type="checkbox" name="reverse"/>
-            <label for="request-reverse">Reverse</label>
-          </div>
+          <label for="text">Fruit:</label><input id="request-text" type="text" name="text" autofocus="autofocus"/>
+          <label for="stock">Stock:</label><input id="request-stock" type="text" name="stock" autofocus="autofocus"/>
 
           <button>Send request</button>
         </form>
-
-        <h2>Responses</h2>
-
-        <div id="responses"></div>
-
-        <h2>Workers</h2>
-
-        <div id="workers"><span class="placeholder">Loading</span></div>
       </div>
     </div>
   </body>

@@ -205,9 +205,9 @@ items:
           - name: AMQ_TRANSPORTS
             value: "amqp"
           - name: AMQ_QUEUES
-            value: "work-queue/requests,work-queue/responses"
+            value: "work-queue-requests,work-queue-responses"
           - name: AMQ_TOPICS
-            value: "work-queue/worker-updates"
+            value: "work-queue-worker-updates"
           - name: AMQ_MESH_DISCOVERY_TYPE
             value: "dns"
           - name: AMQ_MESH_SERVICE_NAME
