@@ -1,33 +1,87 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <title>Messaging Work Queue</title>
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,300italic,400,400italic,600,600italic|Ubuntu+Mono:400" rel="stylesheet" type="text/css"/>
-    <link rel="stylesheet" href="/app.css" type="text/css"/>
-    <link rel="icon" href="" type="image/png"/>
-    <script type="text/javascript" src="/gesso.js"></script>
-    <script type="text/javascript" src="/app.js"></script>
-    <script>
-      "use strict";
-      const app = new Application();
-    </script>
-  </head>
-  <body>
-    <div id="-body">
-      <div id="-body-content">
-        <h1>Messaging Work Queue</h1>
 
-        <h2>Add Fruit</h2>
+<head>
+  <title>Messaging Work Queue</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link
+    href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,300italic,400,400italic,600,600italic|Ubuntu+Mono:400"
+    rel="stylesheet" type="text/css" />
+  <link rel="stylesheet" href="/app.css" type="text/css" />
+  <link rel="stylesheet" href="/patternfly.css" type="text/css" />
+  <link rel="stylesheet" href="/patternfly-addons.css" type="text/css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="icon" href="" type="image/png" />
+  <script type="text/javascript" src="/gesso.js"></script>
+  <script type="text/javascript" src="/app.js"></script>
+  <script>
+    "use strict";
+    const app = new Application();
+  </script>
+</head>
 
-        <form id="requests" method="post" action="javascript:void(0);">
-          <label for="text">Fruit:</label><input id="request-text" type="text" name="text" autofocus="autofocus"/>
-          <label for="stock">Stock:</label><input id="request-stock" type="text" name="stock" autofocus="autofocus"/>
+<body class="pf-u-display-flex pf-u-justify-content-center">
+  <div class="pf-l-stack pf-m-gutter" style="margin: auto; padding: 1em; min-width: 75%;">
+    <section class="pf-l-stack__item">
+      <h1 class="pf-c-title pf-m-4xl" style="text-align: center;">
+        <i class="fa fa-envelope"></i>
+        Messaging Work Queue
+      </h1>
+    </section>
 
-          <button>Send request</button>
-        </form>
+    <section>
+      <section class="pf-c-alert pf-m-inline" id="alertMessage" style="visibility: hidden;">
+        <div class="pf-c-alert__icon">
+          <i aria-hidden="true" id="alertIcon"></i>
+        </div>
+        <h4 class="pf-c-alert__title" id="alertTitle"></h4>
+        <div class="pf-c-alert__action">
+          <button class="pf-c-button pf-m-plain" type="button" aria-label="Close success alert: Success alert title" id="closeAlertButton">
+            <i class="fa fa-times" aria-hidden="true"></i>
+          </button>
+        </div>
+      </section>
+    </section>
+
+    <form novalidate class="pf-c-form pf-m-horizontal" id="requests" method="post" action="javascript:void(0);">
+      <div class="pf-c-form__group">
+        <label class="pf-c-form__label" for="text">
+          <span class="pf-c-form__label-text">
+            Fruit:
+          </span>
+          <span class="pf-c-form__label-required" aria-hidden="true">&#42;</span>
+        </label>
+        <div class="pf-c-form__horizontal-group">
+          <input class="pf-c-form-control" id="request-text" type="text" name="text" autofocus="autofocus" required>
+        </div>
       </div>
-    </div>
-  </body>
+
+      <!-- <div class="pf-c-form__group">
+        <label class="pf-c-form__label" for="stock">
+          <span class="pf-c-form__label-text">
+            Stock:
+          </span>
+          <span class="pf-c-form__label-required" aria-hidden="true">&#42;</span>
+        </label>
+        <div class="pf-c-form__horizontal-group">
+          <input class="pf-c-form-control" id="request-stock" type="text" name="stock" autofocus="autofocus" required>
+        </div>
+      </div> -->
+
+      <div style="text-align: center;">
+        <button class="pf-c-button pf-m-primary" type="submit" style="width: 10em;">Send request</button>
+      </div>
+    </form>
+
+
+  </div>
+</body>
+
+<footer>
+  <p class="middleAlign">
+    <i class="fa fa-info-circle"></i> Basic messaging application that represents a newer system using a queue.
+  </p>
+</footer>
+
 </html>
