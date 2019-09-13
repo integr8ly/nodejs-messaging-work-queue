@@ -23,6 +23,8 @@
 
 const gesso = new Gesso();
 
+const DEFAULT_ALERT_DURATION = 3000;
+
 class Application {
     constructor() {
         this.data = null;
@@ -66,17 +68,17 @@ class Application {
             reverse: false,
         };
 
-        if (data.text.trim().length === 0) {
-            this.setAlertMessageContent("Please enter a fruit", "fa fa-exclamation-circle", "pf-c-alert pf-m-danger pf-m-inline");
-            this.showAlertForDuration(3000);
-        } else {
-            let json = JSON.stringify(data);
-
-            request.setRequestHeader("Content-Type", "application/json");
-            request.send(json);
-    
-            form.text.value = "";
+        if (!data.text.trim().length) {
+            this.showAlert("Please enter a fruit", { iconClass: "fa fa-exclamation-circle", alertTypeClass: "pf-c-alert pf-m-danger pf-m-inline", duration: DEFAULT_ALERT_DURATION });
+            return;
         }
+
+        let json = JSON.stringify(data);
+
+        request.setRequestHeader("Content-Type", "application/json");
+        request.send(json);
+
+        form.text.value = "";
     }
 
     renderResponses() {
@@ -87,44 +89,35 @@ class Application {
     }
 
     showNotificationByResponseStatus(responseStatus) {
-        this.setCloseAlertOnClick();
-
-        if (responseStatus>= 200 && responseStatus < 300) {
-            this.setAlertMessageContent("Fruit succesfully created", "fa fa-check-circle", "pf-c-alert pf-m-success pf-m-inline");
+        if (responseStatus >= 200 && responseStatus < 300) {
+            this.showAlert("Fruit succesfully created", { iconClass: "fa fa-check-circle", alertTypeClass: "pf-c-alert pf-m-success pf-m-inline", duration: DEFAULT_ALERT_DURATION });
         } else {
-            this.setAlertMessageContent("An unexpected error occurred. Please try again later", "fa fa-exclamation-circle", "pf-c-alert pf-m-danger pf-m-inline");
+            this.showAlert("An unexpected error occurred. Please try again later", { iconClass: "fa fa-exclamation-circle", alertTypeClass: "pf-c-alert pf-m-danger pf-m-inline", duration: DEFAULT_ALERT_DURATION });
         }
-
-        this.showAlertForDuration(3000);
     }
 
-    setCloseAlertOnClick() {
-        const closeAlertButton = document.getElementById("closeAlertButton");
+    showAlert(message, options) {
+        const alertTitle = document.getElementById("alertTitle");
+        const alertIcon = document.getElementById("alertIcon");
+        const alertMessage = document.getElementById("alertMessage");
+
+        alertTitle.innerHTML = message;
+        alertIcon.className = options.iconClass;
+        alertMessage.className = options.alertTypeClass;
+
+        alertMessage.removeAttribute("style");
+        clearTimeout(this.alertTimeoutReference);
+        this.alertTimeoutReference = setTimeout(() => {
+            this.hideElement(alertMessage);
+        }, options.duration);
+
+                const closeAlertButton = document.getElementById("closeAlertButton");
         closeAlertButton.addEventListener("click", (event) => {
             this.hideElement(alertMessage);
         });
     }
 
-    setAlertMessageContent(title, iconClass, alertTypeClass) {
-        const alertTitle = document.getElementById("alertTitle");
-        const alertIcon = document.getElementById("alertIcon");
-        const alertMessage = document.getElementById("alertMessage");
-
-        alertTitle.innerHTML = title;
-        alertIcon.className =  iconClass;
-        alertMessage.className = alertTypeClass;
-    }
-
     hideElement(element) {
         element.style.visibility = "hidden";
-    }
-
-    showAlertForDuration(duration) {
-        const alertMessage = document.getElementById("alertMessage");
-        alertMessage.removeAttribute("style"); 
-        clearTimeout(this.alertTimeoutReference);
-        this.alertTimeoutReference = setTimeout(() => {
-            this.hideElement(alertMessage);
-        }, duration);
     }
 }
