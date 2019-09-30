@@ -1,6 +1,6 @@
 {
    "name": "nodejs-messaging-work-queue-frontend",
-   "version": "4.0.0",
+   "version": "4.0.1",
    "description": "A sample Node.js app that sends requests",
    "license": "Apache-2.0",
    "scripts": {
@@ -48,6 +48,7 @@
    },
    "homepage": "https://github.com/bucharest-gold/nodejs-messaging-work-queue",
    "dependencies": {
+      "@patternfly/patternfly": "^2.31.4",
       "body-parser": "~1.18.3",
       "debug": "~3.1.0",
       "express": "^4.16.0",
