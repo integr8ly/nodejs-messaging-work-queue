@@ -25,9 +25,8 @@ const probe = require('kube-probe');
 const exphbs = require('express-handlebars');
 const session = require('express-session');
 const env = require('env-var')
-const { resolve } = require('path')
-const amqp = require('./lib/amqp')
 const log = require('./lib/log')
+const amqp = require('./lib/amqp')
 const { ensureLoggedIn } = require('./lib/middleware')
 
 const app = express();
@@ -44,7 +43,7 @@ probe(app);
 
 // Configure server-side rendering
 app.engine('handlebars', exphbs())
-app.set('views', resolve(__dirname, 'v1-server-local-sessions/views'))
+app.set('views', path.resolve(__dirname, 'v1-server-local-sessions/views'))
 app.set('view engine', 'handlebars')
 
 app.use(session({
@@ -111,7 +110,7 @@ app.post('/api/order', ensureLoggedIn, async (req, res, next) => {
   }
 });
 
-app.get('/api/order/history', ensureLoggedIn,(req, resp) => {
+app.get('/api/order/history', ensureLoggedIn, (req, res) => {
   res.json(req.session.orders)
 });
 
