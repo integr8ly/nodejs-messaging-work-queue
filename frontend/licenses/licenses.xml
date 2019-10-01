@@ -1,9 +1,19 @@
 <?xml version='1.0'?>
 <licenseSummary>
     <project>nodejs-messaging-work-queue-frontend</project>
-    <version>4.0.0</version>
+    <version>4.0.1</version>
     <license>Apache-2.0</license>
     <dependencies>
+        <dependency>
+            <packageName>@patternfly/patternfly</packageName>
+            <version>2.31.4</version>
+            <licenses>
+                <license>
+                    <name>MIT License</name>
+                    <url>http://www.opensource.org/licenses/MIT</url>
+                </license>
+            </licenses>
+        </dependency>
         <dependency>
             <packageName>body-parser</packageName>
             <version>1.18.3</version>
@@ -17,6 +27,16 @@
         <dependency>
             <packageName>debug</packageName>
             <version>3.1.0</version>
+            <licenses>
+                <license>
+                    <name>MIT License</name>
+                    <url>http://www.opensource.org/licenses/MIT</url>
+                </license>
+            </licenses>
+        </dependency>
+        <dependency>
+            <packageName>express-session</packageName>
+            <version>1.16.2</version>
             <licenses>
                 <license>
                     <name>MIT License</name>

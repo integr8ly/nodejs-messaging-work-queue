@@ -24,6 +24,10 @@ const bodyParser = require('body-parser');
 const express = require('express');
 const probe = require('kube-probe');
 const rhea = require('rhea');
+const exphbs = require('express-handlebars');
+const session = require('express-session');
+const env = require('env-var')
+const { resolve } = require('path')
 
 // AMQP
 
@@ -74,18 +78,77 @@ container.connect(opts);
 
 const app = express();
 
+// Required when running behind a load balancer, e.g HAProxy
+app.set('trust proxy', true)
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
-app.use('/', express.static(path.join(__dirname, 'public')));
 // Expose the license.html at http[s]://[host]:[port]/licences/licenses.html
 app.use('/licenses', express.static(path.join(__dirname, 'licenses')));
 
-app.use('/api/greeting', (request, response) => {
-  const name = request.query ? request.query.name : undefined;
-  response.send({content: `Hello, ${name || 'World!'}`});
-});
-
 probe(app);
+
+// Configure server-side rendering
+app.engine('handlebars', exphbs())
+app.set('views', resolve(__dirname, 'v1-server-local-sessions/views'))
+app.set('view engine', 'handlebars')
+
+app.use(session({
+  secret: env.get('SESSION_SECRET', 'wow, such secret. very secure').asString(),
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    // Use secure cookies in production
+    secure: env.get('NODE_ENV').asString() === 'production'
+  }
+}))
+
+// Expose static assets, e.g patternfly css and images
+app.use('/', express.static(path.join(__dirname, 'public')));
+
+// Default application route. Forces a login if the user is not logged in
+app.get('/', (req, res) => {
+  const { username, orders } = req.session
+
+  if (username) {
+    res.render('index.handlebars', { username, orders })
+  } else {
+    res.render('login.handlebars')
+  }
+})
+
+// Used by the login form to attach a session to the user
+app.post('/login', (req, res) => {
+  const { username } = req.body
+
+  if (username && username.match(/[A-Za-z]{1,15}/)) {
+    // Username is valid, attach it to the session
+    req.session.username = username
+    res.redirect('/')
+  } else {
+    // Invalid username, redirect to the login form
+    res.render('login.handlebars', {
+      username,
+      invalid: true
+    })
+  }
+})
+
+app.post('/api/order', (req, res) => {
+  const { product, quantity } = req.body
+  const datetime = new Date().toJSON()
+
+  console.log('order', product, quantity)
+
+  // Lazy initialisation of orders
+  req.session.orders = req.session.orders || []
+
+  req.session.orders.push({ product, quantity, datetime })
+
+  console.log(req.session.orders)
+
+  res.json(req.session.orders)
+});
 
 app.post('/api/send-request', (req, resp) => {
   const message = {
