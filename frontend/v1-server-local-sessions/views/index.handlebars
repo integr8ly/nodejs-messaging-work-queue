@@ -22,7 +22,7 @@
 </style>
 
 {{!-- Success alert for when items create successfully --}}
-<div class="pf-c-alert pf-m-success" aria-label="Success alert">
+<div class="pf-c-alert pf-m-success" id="alert-success" aria-label="Success alert">
   <div class="pf-c-alert__icon">
     <i class="fas fa-check-circle" aria-hidden="true"></i>
   </div>
@@ -33,7 +33,7 @@
 </div>
 
 {{!-- Error alert for when api requests fail --}}
-<div class="pf-c-alert pf-m-danger" aria-label="Danger alert">
+<div class="pf-c-alert pf-m-danger" id="alert-danger" aria-label="Danger alert">
   <div class="pf-c-alert__icon">
     <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
   </div>
@@ -117,7 +117,7 @@
 
 <script type="text/javascript">
   function showSuccessAlert () {
-    const alert = document.getElementsByClassName('pf-c-alert')[0]
+    const alert = document.getElementById('alert-success')
 
     alert.classList.add('visible')
 
@@ -127,7 +127,7 @@
   }
 
   function showErrorAlert () {
-    const alert = document.getElementsByClassName('pf-c-alert')[0]
+    const alert = document.getElementById('alert-danger')
 
     alert.classList.add('visible')
 
@@ -197,7 +197,7 @@
           updateTable(orders)
         })
         .catch((e) => {
-          // Error modal
+          showErrorAlert()
           button.disabled = false
         })
     }, 500)

@@ -19,62 +19,16 @@
  */
 
 const path = require('path');
-const crypto = require('crypto');
 const bodyParser = require('body-parser');
 const express = require('express');
 const probe = require('kube-probe');
-const rhea = require('rhea');
 const exphbs = require('express-handlebars');
 const session = require('express-session');
 const env = require('env-var')
 const { resolve } = require('path')
-
-// AMQP
-
-const amqpHost = process.env.MESSAGING_SERVICE_HOST || 'localhost';
-const amqpPort = process.env.MESSAGING_SERVICE_PORT || 5672;
-const amqpUser = process.env.MESSAGING_SERVICE_USER || 'work-queue';
-const amqpPassword = process.env.MESSAGING_SERVICE_PASSWORD || 'work-queue';
-
-const id = 'frontend-nodejs-' + crypto.randomBytes(2).toString('hex');
-const container = rhea.create_container({id});
-
-let connection = null;
-
-const requestIds = [];
-const responses = {};
-const workers = {};
-
-let requestSequence = 0;
-
-function sendRequest (message) {
-    message.to = 'work-queue-requests';
-    connection.send(message);
-    console.log(`${id}: Sent request ${JSON.stringify(message)}`);
-}
-
-container.on('connection_open', event => {
-  console.log(`${id}: Connected to AMQP messaging service at ${amqpHost}:${amqpPort}`);
-  connection = event.connection;
-});
-
-const opts = {
-  host: amqpHost,
-  port: amqpPort,
-  username: amqpUser,
-  password: amqpPassword
-};
-
-container.on('error', err => {
-  console.error(err);
-  console.error(`Exiting worker with status 100`);
-  process.exit(100);
-});
-
-console.log(`${id}: Attempting to connect to AMQP messaging service at ${amqpHost}:${amqpPort}`);
-container.connect(opts);
-
-// HTTP
+const amqp = require('./lib/amqp')
+const log = require('./lib/log')
+const { ensureLoggedIn } = require('./lib/middleware')
 
 const app = express();
 
@@ -103,18 +57,11 @@ app.use(session({
   }
 }))
 
-// Expose static assets, e.g patternfly css and images
+// Expose static assets, e.g patternfly and images
 app.use('/', express.static(path.join(__dirname, 'public')));
 
-// Default application route. Forces a login if the user is not logged in
-app.get('/', (req, res) => {
-  const { username, orders } = req.session
-
-  if (username) {
-    res.render('index.handlebars', { username, orders })
-  } else {
-    res.render('login.handlebars')
-  }
+app.get('/login', (req, res) => {
+  res.render('login.handlebars')
 })
 
 // Used by the login form to attach a session to the user
@@ -134,41 +81,45 @@ app.post('/login', (req, res) => {
   }
 })
 
-app.post('/api/order', (req, res) => {
+app.get('/', ensureLoggedIn, (req, res) => {
+  const { username, orders } = req.session
+
+  res.render('index.handlebars', { username, orders })
+})
+
+app.post('/api/order', ensureLoggedIn, async (req, res, next) => {
   const { product, quantity } = req.body
-  const datetime = new Date().toJSON()
 
-  console.log('order', product, quantity)
+  log.info(`user ${req.session.username}`)
 
-  // Lazy initialisation of orders
-  req.session.orders = req.session.orders || []
+  const order = {
+    message: new Date().toJSON(),
+    product,
+    quantity
+  }
 
-  req.session.orders.push({ product, quantity, datetime })
+  try {
+    const id = await amqp.sendMessage(JSON.stringify(order))
 
-  console.log(req.session.orders)
+    // Lazy initialisation of orders
+    req.session.orders = req.session.orders || []
+    req.session.orders.push({ product, quantity, datetime, id })
 
+    res.json(req.session.orders)
+  } catch (ex) {
+    next(ex)
+  }
+});
+
+app.get('/api/order/history', ensureLoggedIn,(req, resp) => {
   res.json(req.session.orders)
 });
 
-app.post('/api/send-request', (req, resp) => {
-  const message = {
-    message_id: id + '/' + requestSequence++,
-    application_properties: {
-      uppercase: req.body.uppercase,
-      reverse: req.body.reverse
-    },
-    body: JSON.stringify({type:req.body.text, stock: req.body.stock})
-  };
+app.use((err, req, res, next) => {
+  log.error(`express encountered an error processing a request ${req.method} ${req.originalUrl}`)
+  log.error(err)
 
-  requestIds.push(message.message_id);
-
-  sendRequest(message);
-
-  resp.status(202).send(message.message_id);
-});
-
-app.get('/api/data', (req, resp) => {
-  resp.json({requestIds, responses, workers});
-});
+  res.status(500).end('Internal Server Error')
+})
 
 module.exports = app;
