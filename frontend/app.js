@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 /*
  *
@@ -18,102 +18,69 @@
  *
  */
 
-const path = require('path');
-const bodyParser = require('body-parser');
-const express = require('express');
-const probe = require('kube-probe');
-const exphbs = require('express-handlebars');
-const session = require('express-session');
-const env = require('env-var')
+const path = require('path')
+const bodyParser = require('body-parser')
+const express = require('express')
+const probe = require('kube-probe')
+const exphbs = require('express-handlebars')
 const log = require('./lib/log')
-const amqp = require('./lib/amqp')
-const { ensureLoggedIn } = require('./lib/middleware')
+const { getUsernameFromRequest } = require('./lib/utils')
+const { getKeycloakInstance, getSessionMiddleware } = require('./lib/middleware')
 
-const app = express();
+const app = express()
+const keycloak = getKeycloakInstance()
 
 // Required when running behind a load balancer, e.g HAProxy
 app.set('trust proxy', true)
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: false}));
-// Expose the license.html at http[s]://[host]:[port]/licences/licenses.html
-app.use('/licenses', express.static(path.join(__dirname, 'licenses')));
+// Add liveness/readiness probes for Kubernetes
+probe(app)
 
-probe(app);
+// Parse incoming JSON and URL encoded body payloads
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: false }))
 
 // Configure server-side rendering
 app.engine('handlebars', exphbs())
-app.set('views', path.resolve(__dirname, 'v1-server-local-sessions/views'))
+app.set('views', path.resolve(__dirname, 'views'))
 app.set('view engine', 'handlebars')
 
-app.use(session({
-  secret: env.get('SESSION_SECRET', 'wow, such secret. very secure').asString(),
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    // Use secure cookies in production
-    secure: env.get('NODE_ENV').asString() === 'production'
-  }
-}))
+// Expose static assets, e.g patternfly css, assets, licenses
+app.use('/licenses', express.static(path.join(__dirname, 'licenses')))
+app.use('/', express.static(path.join(__dirname, 'public')))
 
-// Expose static assets, e.g patternfly and images
-app.use('/', express.static(path.join(__dirname, 'public')));
+// Apply session and keycloak middleware
+app.use(getSessionMiddleware())
 
-app.get('/login', (req, res) => {
-  res.render('login.handlebars')
-})
+// All routes from this point forward require a user to be logged in
+// Mount either keycloak, or our simple authentication strategy
+if (keycloak) {
+  app.use(keycloak.middleware({
+    logout: '/logout'
+  }))
+  app.use(keycloak.protect())
+} else {
+  app.use(require('./lib/routes/login'))
+}
 
-// Used by the login form to attach a session to the user
-app.post('/login', (req, res) => {
-  const { username } = req.body
-
-  if (username && username.match(/[A-Za-z]{1,15}/)) {
-    // Username is valid, attach it to the session
-    req.session.username = username
-    res.redirect('/')
-  } else {
-    // Invalid username, redirect to the login form
-    res.render('login.handlebars', {
-      username,
-      invalid: true
-    })
-  }
-})
-
-app.get('/', ensureLoggedIn, (req, res) => {
-  const { username, orders } = req.session
+// Render the homepage HTML
+app.get('/', (req, res) => {
+  const { orders } = req.session
+  const username = getUsernameFromRequest(req)
 
   res.render('index.handlebars', { username, orders })
 })
 
-app.post('/api/order', ensureLoggedIn, async (req, res, next) => {
-  const { product, quantity } = req.body
+// Mount the /orders API endpoints
+app.use('/api', require('./lib/routes/api.order'))
 
-  log.info(`user ${req.session.username}`)
+// Provide a friendly 404 page
+// app.use((req, res) => {
+//   log.warn(`404 generated. client tried to access ${req.originalUrl}`)
+//   res.render('not-found.handlebars')
+// })
 
-  const order = {
-    message: new Date().toJSON(),
-    product,
-    quantity
-  }
-
-  try {
-    const id = await amqp.sendMessage(JSON.stringify(order))
-
-    // Lazy initialisation of orders
-    req.session.orders = req.session.orders || []
-    req.session.orders.push({ product, quantity, datetime, id })
-
-    res.json(req.session.orders)
-  } catch (ex) {
-    next(ex)
-  }
-});
-
-app.get('/api/order/history', ensureLoggedIn, (req, res) => {
-  res.json(req.session.orders)
-});
-
+// Log errors/exceptions to stderr and return a server error
 app.use((err, req, res, next) => {
   log.error(`express encountered an error processing a request ${req.method} ${req.originalUrl}`)
   log.error(err)
@@ -121,4 +88,4 @@ app.use((err, req, res, next) => {
   res.status(500).end('Internal Server Error')
 })
 
-module.exports = app;
+module.exports = app

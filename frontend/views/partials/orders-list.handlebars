@@ -1,0 +1,46 @@
+<main role="main" class="pf-c-page__main">
+  <section class="pf-c-page__main-section pf-m-light">
+    <h1 class="pf-c-title pf-m-4xl pf-u-mb-sm">
+      Order Entry System
+    </h1>
+  </section>
+  <section class="pf-c-page__main-section pf-m-fill">
+    <div>
+      <h1 style="display: inline-block;" class="pf-c-title pf-m-2xl pf-u-mb-sm">
+        Order History &nbsp;
+      </h1>
+      <button class="pf-c-button pf-m-primary" type="button" onclick="orderModal.show()">
+        Create an order
+      </button>
+    </div>
+    <br>
+    <table class="pf-c-table pf-m-grid-md" role="grid" aria-label="This table lists all your orders" id="order-table">
+      <thead>
+        <tr>
+          <th>
+            Part Name
+          </th>
+          <th>
+            Quantity
+          </th>
+          <th>
+            Datetime
+          </th>
+          <th>
+            Order TXID
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each orders}}
+          <tr>
+            <td>{{product}}</td>
+            <td>{{quantity}}</td>
+            <td>{{datetime}}</td>
+            <td>{{id}}</td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </section>
+</main>

@@ -1,7 +1,5 @@
 'use strict'
 
-const env = require('env-var')
-
-const level = env.get('LOG_LEVEL', 'debug').asEnum(['trace', 'debug', 'info'])
+const { LOG_LEVEL: level } = require('./config')
 
 module.exports = require('pino')({ level })
