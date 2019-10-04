@@ -13,6 +13,22 @@ message protocol to send and receive messages.
 * The user has selected a project in which the frontend and backend
   processes will be deployed.
 
+## Local Development
+
+Requires:
+
+* Node.js 10+
+* npm 6+
+
+Run the following commands from the *frontend/* directory in this repository:
+
+```
+npm i
+npm run start:dev
+```
+
+You can now access the application on http://localhost:8080
+
 ## Deployment
 
 Run the following commands to configure and deploy the applications.
@@ -26,5 +42,3 @@ $ ./start-openshift
 
 The `frontend` module serves the web interface and communicates with
 workers in the backend.
-
-The `worker` module implements the worker service in the backend.
