@@ -39,6 +39,7 @@
    },
    "homepage": "https://github.com/bucharest-gold/nodejs-messaging-work-queue",
    "dependencies": {
+      "@hapi/boom": "^8.0.1",
       "@hapi/joi": "^16.1.5",
       "@patternfly/patternfly": "~2.33.5",
       "body-parser": "~1.18.3",

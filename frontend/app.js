@@ -21,11 +21,13 @@
 const path = require('path')
 const bodyParser = require('body-parser')
 const express = require('express')
+const boom = require('@hapi/boom')
 const probe = require('kube-probe')
 const exphbs = require('express-handlebars')
 const log = require('./lib/log')
+const utils = require('./lib/utils')
 const { getUsernameFromRequest } = require('./lib/utils')
-const { getKeycloakInstance, getSessionMiddleware } = require('./lib/middleware')
+const { getKeycloakInstance, getSessionMiddleware, threescaleApiMiddleware } = require('./lib/middleware')
 
 const app = express()
 const keycloak = getKeycloakInstance()
@@ -49,8 +51,11 @@ app.set('view engine', 'handlebars')
 app.use('/licenses', express.static(path.join(__dirname, 'licenses')))
 app.use('/', express.static(path.join(__dirname, 'public')))
 
-// Apply session and keycloak middleware
+// Apply session middleware
 app.use(getSessionMiddleware())
+
+// Add threescale middleware to validate 3scale proxied requests
+app.use(threescaleApiMiddleware())
 
 // All routes from this point forward require a user to be logged in
 // Mount either keycloak, or our simple authentication strategy
@@ -58,7 +63,13 @@ if (keycloak) {
   app.use(keycloak.middleware({
     logout: '/logout'
   }))
-  app.use(keycloak.protect())
+  app.use((req, res, next) => {
+    if (req.validatedByThreescale) {
+      next()
+    } else {
+      keycloak.protect(req, res, next)
+    }
+  })
 } else {
   app.use(require('./lib/routes/login'))
 }
@@ -75,17 +86,22 @@ app.get('/', (req, res) => {
 app.use('/api', require('./lib/routes/api.order'))
 
 // Provide a friendly 404 page
-// app.use((req, res) => {
-//   log.warn(`404 generated. client tried to access ${req.originalUrl}`)
-//   res.render('not-found.handlebars')
-// })
+app.use((req, res) => {
+  log.warn(`404 generated. client tried to access ${req.originalUrl}`)
+  res.render('not-found.handlebars')
+})
 
 // Log errors/exceptions to stderr and return a server error
 app.use((err, req, res, next) => {
   log.error(`express encountered an error processing a request ${req.method} ${req.originalUrl}`)
   log.error(err)
 
-  res.status(500).end('Internal Server Error')
+  if (boom.isBoom(err)) {
+    res.status(err.output.statusCode).json(err.output.payload)
+  } else {
+    res.status(500).end('Internal Server Error')
+  }
+
 })
 
 module.exports = app

@@ -28,7 +28,9 @@ route.post('/login', (req, res) => {
 })
 
 route.use((req, res, next) => {
-  if (!req.session || !req.session.username) {
+  if (req.validatedByThreescale) {
+    next()
+  } else if (!req.session || !req.session.username) {
     log.trace(`no session or username detected, redirecting from ${req.originalUrl} to /login`)
     res.redirect('/login')
   } else {

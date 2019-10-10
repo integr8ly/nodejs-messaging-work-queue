@@ -5,5 +5,5 @@ RUN npm i
 
 # Remove dev/build dependencies to reduce container size
 RUN npm prune --production
-
+USER 1001
 CMD node .
