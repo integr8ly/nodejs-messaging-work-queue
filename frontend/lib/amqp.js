@@ -33,16 +33,17 @@ container.connect({
 
 /**
  * Send a message to the queue
- * @param {String} body
+ * @param {Object} body
  */
 exports.sendMessage = function (body) {
+  const message_id = id + '/' + requestSequence++
   const message = {
     to: 'work-queue-requests',
-    message_id: id + '/' + requestSequence++,
-    body
+    message_id,
+    body: JSON.stringify({ ...body, message_id })
   }
 
-  log.debug(`${id}: constructed message for sending`, message)
+  log.debug(`${id}: constructed message for sending: %j`, message)
 
   if (!connection) {
     if (!IS_LOCAL) {

@@ -26,7 +26,7 @@ route.post('/order', validator.body(schema), async (req, res, next) => {
   }
 
   try {
-    const id = await amqp.sendMessage(JSON.stringify(order))
+    const id = await amqp.sendMessage(order)
 
     // Lazy initialisation of orders
     req.session.orders = req.session.orders || []
