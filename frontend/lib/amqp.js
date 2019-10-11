@@ -36,11 +36,11 @@ container.connect({
  * @param {Object} body
  */
 exports.sendMessage = function (body) {
-  const message_id = id + '/' + requestSequence++
+  const messageId = id + '/' + requestSequence++
   const message = {
     to: 'work-queue-requests',
-    message_id,
-    body: JSON.stringify({ ...body, message_id })
+    message_id: messageId,
+    body: JSON.stringify({ ...body, message_id: messageId })
   }
 
   log.debug(`${id}: constructed message for sending: %j`, message)

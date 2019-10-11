@@ -25,7 +25,6 @@ const boom = require('@hapi/boom')
 const probe = require('kube-probe')
 const exphbs = require('express-handlebars')
 const log = require('./lib/log')
-const utils = require('./lib/utils')
 const { getUsernameFromRequest } = require('./lib/utils')
 const { getKeycloakInstance, getSessionMiddleware, threescaleApiMiddleware } = require('./lib/middleware')
 
@@ -101,7 +100,6 @@ app.use((err, req, res, next) => {
   } else {
     res.status(500).end('Internal Server Error')
   }
-
 })
 
 module.exports = app
