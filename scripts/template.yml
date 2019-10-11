@@ -82,8 +82,8 @@ objects:
   kind: Route
   metadata:
     labels:
-      app: rhmi-lab-nodejs-order-frontend
-    name: rhmi-lab-nodejs-order-frontend
+      app: order-entry-ui
+    name: order-entry-ui
   spec:
     port:
       targetPort: 8080-tcp
