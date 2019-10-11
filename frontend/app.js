@@ -67,7 +67,7 @@ if (keycloak) {
     if (req.validatedByThreescale) {
       next()
     } else {
-      keycloak.protect(req, res, next)
+      keycloak.protect()(req, res, next)
     }
   })
 } else {
