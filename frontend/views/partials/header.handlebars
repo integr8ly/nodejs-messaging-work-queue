@@ -5,4 +5,14 @@
       &nbsp; CRUDDY'S CAR PARTS
     </h1>
   </div>
+  {{#if username}}
+    <div style="padding-right: 1em; margin-left: auto;">
+      <p>{{username}} &nbsp;</p>
+      <a href="/logout">
+        <i style="font-size: 16pt; padding: 1em 0.2em; color: white;" class="fas fa-sign-out-alt"></i>
+      </a>
+    </div>
+  {{else}}
+    <span></span>
+  {{/if}}
 </header>
