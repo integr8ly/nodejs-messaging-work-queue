@@ -1,0 +1,115 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Order API",
+    "description": "A public API to add orders to the Order Entry System",
+    "version": "1.0"
+  },
+  "basePath": "/api",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/order": {
+      "post": {
+        "operationId": "create-order",
+        "summary": "Create an order",
+        "description": "Create an order",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateOrder"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/order/history": {
+      "get": {
+        "operationId": "order-history",
+        "summary": "Show order history",
+        "description": "Show the list of orders",
+        "responses": {
+          "200": {
+            "description": "List of orders",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Order"
+              }
+            },
+            "examples": {
+              "application/json": [
+                {
+                  "product": "engine",
+                  "quantity": 1,
+                  "message_id": "frontend-nodejs-72fe/0",
+                  "datetime": "2019-10-13T14:43:07.133Z"
+                },
+                {
+                  "product": "door",
+                  "quantity": 4,
+                  "message_id": "frontend-nodejs-72fe/1",
+                  "datetime": "2019-10-13T14:43:23.648Z"
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Order": {
+      "title": "Root Type for Order",
+      "description": "The root of the Order type's schema.",
+      "type": "object",
+      "properties": {
+        "product": {
+          "type": "string"
+        },
+        "quantity": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "message_id": {
+          "type": "string"
+        },
+        "datetime": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "example": "{\n    \"product\": \"Engine\",\n    \"quantity\": 1,\n    \"message_id\": \"frontend/nodejs-ec41\",\n    \"datetime\": \"2019-10-10T19:28:35.840Z\"\n}"
+    },
+    "CreateOrder": {
+      "title": "Root Type for CreateOrder",
+      "description": "The root of the CreateOrder type's schema.",
+      "type": "object",
+      "properties": {
+        "product": {
+          "type": "string"
+        },
+        "quantity": {
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "example": "{\n    \"product\": \"Engine\",\n    \"quantity\": 1\n}"
+    }
+  }
+}
