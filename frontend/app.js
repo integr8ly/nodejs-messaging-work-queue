@@ -69,8 +69,6 @@ if (keycloak) {
       keycloak.protect()(req, res, next)
     }
   })
-} else {
-  app.use(require('./lib/routes/login'))
 }
 
 // Render the homepage HTML
