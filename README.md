@@ -29,6 +29,19 @@ npm run start:dev
 
 You can now access the application on http://localhost:8080
 
+## Build an Image
+
+[source-to-image (s2i)](https://docs.okd.io/latest/creating_images/s2i.html) is
+used to generate builds.
+
+The commands are as follows once you have Docker and s2i installed:
+
+```bash
+export CONTAINER_NAME=rhmi-lab-nodejs-order-ui
+docker pull registry.access.redhat.com/ubi8/nodejs-10
+s2i build . --context-dir=frontend/ registry.access.redhat.com/ubi8/nodejs-10 $CONTAINER_NAME
+```
+
 ## Authenticating Requests via 3Scale Shared Secret
 
 Start the application with a 3scale secret supplied via the environment, e.g: 
@@ -70,17 +83,3 @@ export KEYCLOAK_CONFIG='{"realm":"master","auth-server-url":"http://localhost:90
 npm run start:dev
 ```
 
-
-## Deployment
-
-Run the following commands to configure and deploy the applications.
-
-```bash
-$ oc create -f service.amqp.yaml
-
-$ ./start-openshift
-```
-## Modules
-
-The `frontend` module serves the web interface and communicates with
-workers in the backend.
