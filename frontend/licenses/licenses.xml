@@ -1,9 +1,19 @@
 <?xml version='1.0'?>
 <licenseSummary>
-    <project>nodejs-messaging-work-queue-frontend</project>
+    <project>order-entry-ui</project>
     <version>4.0.1</version>
     <license>Apache-2.0</license>
     <dependencies>
+        <dependency>
+            <packageName>@hapi/boom</packageName>
+            <version>8.0.1</version>
+            <licenses>
+                <license>
+                    <name>BSD 3-clause "New" or "Revised" License</name>
+                    <url>http://www.opensource.org/licenses/BSD-3-Clause</url>
+                </license>
+            </licenses>
+        </dependency>
         <dependency>
             <packageName>@hapi/joi</packageName>
             <version>16.1.5</version>
