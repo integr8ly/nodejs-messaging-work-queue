@@ -39,7 +39,7 @@ route.post('/order', validator.body(schema), async (req, res, next) => {
 })
 
 route.get('/order/history', (req, res) => {
-  res.json(req.session.orders)
+  res.json(req.session.orders || [])
 })
 
 module.exports = route
