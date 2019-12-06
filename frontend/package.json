@@ -1,7 +1,7 @@
 {
    "name": "order-entry-ui",
-   "version": "4.0.1",
-   "description": "A sample Node.js app that sends requests",
+   "version": "5.0.0",
+   "description": "A Node.js application that serves a frontend that allows users to place orders. Orders are sent via AMQP to a queue.",
    "license": "Apache-2.0",
    "scripts": {
       "test": "npm run lint:check && NODE_ENV=local mocha __test__/**/*.js",

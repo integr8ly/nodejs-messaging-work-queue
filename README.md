@@ -34,7 +34,8 @@ You can now access the application on http://localhost:8080
 [source-to-image (s2i)](https://docs.okd.io/latest/creating_images/s2i.html) is
 used to generate builds.
 
-The commands are as follows once you have Docker and s2i installed:
+You can use the included *scripts/image.build.sh* to perform the build, or do
+so manually using this command once you have Docker and s2i installed:
 
 ```bash
 export CONTAINER_NAME=rhmi-lab-nodejs-order-ui
