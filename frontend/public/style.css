@@ -1,0 +1,44 @@
+#new-order-modal-container {
+  position: fixed;
+  z-index: 999;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(100, 100, 100, 0.8);
+  transition: top 0.3s;
+  top: -100vh;
+}
+
+#new-order-modal-container.visible {
+  top: 0;
+}
+
+#new-order-modal {
+  margin: auto;
+  max-width: 720px;
+  transition: all 0.5s;
+}
+
+.pf-c-alert {
+  opacity: 0;
+  transition: all 0.6s;
+  z-index: 1000;
+  position: fixed;
+  width: 60vw;
+  top: -2vh;
+  right: 0;
+  left: 0;
+  margin: auto;
+}
+
+.pf-c-alert.visible {
+  opacity: 1;
+  top: 7.5vh;
+}
+
+.pf-m-8-col {
+  overflow: scroll
+}
+
+tr th {
+  font-weight: bold;
+}

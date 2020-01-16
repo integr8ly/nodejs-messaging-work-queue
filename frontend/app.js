@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 /*
  *
@@ -18,94 +18,86 @@
  *
  */
 
-const path = require('path');
-const crypto = require('crypto');
-const bodyParser = require('body-parser');
-const express = require('express');
-const probe = require('kube-probe');
-const rhea = require('rhea');
+const path = require('path')
+const bodyParser = require('body-parser')
+const express = require('express')
+const boom = require('@hapi/boom')
+const probe = require('kube-probe')
+const exphbs = require('express-handlebars')
+const log = require('./lib/log')
+const { getUsernameFromRequest } = require('./lib/utils')
+const { getKeycloakInstance, getSessionMiddleware, threescaleApiMiddleware } = require('./lib/middleware')
 
-// AMQP
+const app = express()
+const keycloak = getKeycloakInstance()
 
-const amqpHost = process.env.MESSAGING_SERVICE_HOST || 'localhost';
-const amqpPort = process.env.MESSAGING_SERVICE_PORT || 5672;
-const amqpUser = process.env.MESSAGING_SERVICE_USER || 'work-queue';
-const amqpPassword = process.env.MESSAGING_SERVICE_PASSWORD || 'work-queue';
+// Required when running behind a load balancer, e.g HAProxy
+app.set('trust proxy', true)
 
-const id = 'frontend-nodejs-' + crypto.randomBytes(2).toString('hex');
-const container = rhea.create_container({id});
+// Add liveness/readiness probes for Kubernetes
+probe(app)
 
-let connection = null;
+// Parse incoming JSON and URL encoded body payloads
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: false }))
 
-const requestIds = [];
-const responses = {};
-const workers = {};
+// Configure server-side rendering
+app.engine('handlebars', exphbs())
+app.set('views', path.resolve(__dirname, 'views'))
+app.set('view engine', 'handlebars')
 
-let requestSequence = 0;
+// Expose static assets, e.g patternfly css, assets, licenses
+app.use('/licenses', express.static(path.join(__dirname, 'licenses')))
+app.use('/', express.static(path.join(__dirname, 'public')))
 
-function sendRequest (message) {
-    message.to = 'work-queue-requests';
-    connection.send(message);
-    console.log(`${id}: Sent request ${JSON.stringify(message)}`);
+// Apply session middleware
+app.use(getSessionMiddleware())
+
+// Add threescale middleware to validate 3scale proxied requests
+app.use(threescaleApiMiddleware())
+
+// All routes from this point forward require a user to be logged in
+// Mount either keycloak, or our simple authentication strategy
+if (keycloak) {
+  app.use(keycloak.middleware({
+    logout: '/logout'
+  }))
+  app.use((req, res, next) => {
+    if (req.validatedByThreescale) {
+      next()
+    } else {
+      keycloak.protect()(req, res, next)
+    }
+  })
 }
 
-container.on('connection_open', event => {
-  console.log(`${id}: Connected to AMQP messaging service at ${amqpHost}:${amqpPort}`);
-  connection = event.connection;
-});
+// Render the homepage HTML
+app.get('/', (req, res) => {
+  const { orders } = req.session
+  const username = getUsernameFromRequest(req)
 
-const opts = {
-  host: amqpHost,
-  port: amqpPort,
-  username: amqpUser,
-  password: amqpPassword
-};
+  res.render('index.handlebars', { username, orders })
+})
 
-container.on('error', err => {
-  console.error(err);
-  console.error(`Exiting worker with status 100`);
-  process.exit(100);
-});
+// Mount the /orders API endpoints
+app.use('/api', require('./lib/routes/api.order'))
 
-console.log(`${id}: Attempting to connect to AMQP messaging service at ${amqpHost}:${amqpPort}`);
-container.connect(opts);
+// Provide a friendly 404 page
+app.use((req, res) => {
+  log.warn(`404 generated. client tried to access ${req.originalUrl}`)
+  res.render('not-found.handlebars')
+})
 
-// HTTP
+// Log errors/exceptions to stderr and return a server error
+app.use((err, req, res, next) => {
+  log.error(`express encountered an error processing a request ${req.method} ${req.originalUrl}`)
+  log.error(err)
 
-const app = express();
+  if (boom.isBoom(err)) {
+    res.status(err.output.statusCode).json(err.output.payload)
+  } else {
+    res.status(500).end('Internal Server Error')
+  }
+})
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: false}));
-app.use('/', express.static(path.join(__dirname, 'public')));
-// Expose the license.html at http[s]://[host]:[port]/licences/licenses.html
-app.use('/licenses', express.static(path.join(__dirname, 'licenses')));
-
-app.use('/api/greeting', (request, response) => {
-  const name = request.query ? request.query.name : undefined;
-  response.send({content: `Hello, ${name || 'World!'}`});
-});
-
-probe(app);
-
-app.post('/api/send-request', (req, resp) => {
-  const message = {
-    message_id: id + '/' + requestSequence++,
-    application_properties: {
-      uppercase: req.body.uppercase,
-      reverse: req.body.reverse
-    },
-    body: JSON.stringify({type:req.body.text, stock: req.body.stock})
-  };
-
-  requestIds.push(message.message_id);
-
-  sendRequest(message);
-
-  resp.status(202).send(message.message_id);
-});
-
-app.get('/api/data', (req, resp) => {
-  resp.json({requestIds, responses, workers});
-});
-
-module.exports = app;
+module.exports = app

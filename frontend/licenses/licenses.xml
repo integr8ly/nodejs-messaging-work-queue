@@ -1,9 +1,39 @@
 <?xml version='1.0'?>
 <licenseSummary>
-    <project>nodejs-messaging-work-queue-frontend</project>
-    <version>4.0.0</version>
+    <project>order-entry-ui</project>
+    <version>4.0.1</version>
     <license>Apache-2.0</license>
     <dependencies>
+        <dependency>
+            <packageName>@hapi/boom</packageName>
+            <version>8.0.1</version>
+            <licenses>
+                <license>
+                    <name>BSD 3-clause "New" or "Revised" License</name>
+                    <url>http://www.opensource.org/licenses/BSD-3-Clause</url>
+                </license>
+            </licenses>
+        </dependency>
+        <dependency>
+            <packageName>@hapi/joi</packageName>
+            <version>16.1.5</version>
+            <licenses>
+                <license>
+                    <name>BSD 3-clause "New" or "Revised" License</name>
+                    <url>http://www.opensource.org/licenses/BSD-3-Clause</url>
+                </license>
+            </licenses>
+        </dependency>
+        <dependency>
+            <packageName>@patternfly/patternfly</packageName>
+            <version>2.33.5</version>
+            <licenses>
+                <license>
+                    <name>MIT License</name>
+                    <url>http://www.opensource.org/licenses/MIT</url>
+                </license>
+            </licenses>
+        </dependency>
         <dependency>
             <packageName>body-parser</packageName>
             <version>1.18.3</version>
@@ -25,6 +55,66 @@
             </licenses>
         </dependency>
         <dependency>
+            <packageName>env-var</packageName>
+            <version>5.1.0</version>
+            <licenses>
+                <license>
+                    <name>MIT License</name>
+                    <url>http://www.opensource.org/licenses/MIT</url>
+                </license>
+            </licenses>
+        </dependency>
+        <dependency>
+            <packageName>express-handlebars</packageName>
+            <version>3.1.0</version>
+            <licenses>
+                <license>
+                    <name>BSD 3-clause "New" or "Revised" License</name>
+                    <url>http://www.opensource.org/licenses/BSD-3-Clause</url>
+                </license>
+            </licenses>
+        </dependency>
+        <dependency>
+            <packageName>express-joi-validation</packageName>
+            <version>4.0.1</version>
+            <licenses>
+                <license>
+                    <name>MIT License</name>
+                    <url>http://www.opensource.org/licenses/MIT</url>
+                </license>
+            </licenses>
+        </dependency>
+        <dependency>
+            <packageName>express-session</packageName>
+            <version>1.16.2</version>
+            <licenses>
+                <license>
+                    <name>MIT License</name>
+                    <url>http://www.opensource.org/licenses/MIT</url>
+                </license>
+            </licenses>
+        </dependency>
+        <dependency>
+            <packageName>handlebars</packageName>
+            <version>4.4.0</version>
+            <licenses>
+                <license>
+                    <name>MIT License</name>
+                    <url>http://www.opensource.org/licenses/MIT</url>
+                </license>
+            </licenses>
+        </dependency>
+        <dependency>
+            <packageName>keycloak-connect</packageName>
+            <version>7.0.0</version>
+            <licenses>
+                <license>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+                </license>
+            </licenses>
+        </dependency>
+        <dependency>
             <packageName>kube-probe</packageName>
             <version>0.3.1</version>
             <licenses>
@@ -41,6 +131,16 @@
                 <license>
                     <name>Apache License 2.0</name>
                     <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+                </license>
+            </licenses>
+        </dependency>
+        <dependency>
+            <packageName>pino</packageName>
+            <version>5.13.4</version>
+            <licenses>
+                <license>
+                    <name>MIT License</name>
+                    <url>http://www.opensource.org/licenses/MIT</url>
                 </license>
             </licenses>
         </dependency>

@@ -1,0 +1,122 @@
+{{!-- Error alert for when api requests fail --}}
+<div class="pf-c-alert pf-m-danger" id="alert-danger" aria-label="Danger alert">
+  <div class="pf-c-alert__icon">
+    <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+  </div>
+  <h4 class="pf-c-alert__title">
+    <span class="pf-screen-reader">Danger alert:</span>
+    <span id="error-text">Failed to submit order. Try again later.</span>
+  </h4>
+</div>
+
+<div id="new-order-modal-container">
+  <div id="new-order-modal" class="pf-c-modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-description">
+    <button class="pf-c-button pf-m-plain" type="button" onclick="orderModal.hide()" aria-label="Close">
+      <i class="fas fa-times" aria-hidden="true"></i>
+    </button>
+    <h1 class="pf-c-title pf-m-2xl" id="modal-title">
+      Create an order
+    </h1>
+    <div class="pf-c-modal-box__body" id="modal-description">
+      <form class="pf-c-form" name="order-form">
+        <div class="pf-c-form__group">
+          <label class="pf-c-form__label" for="order.product-name">
+            <span class="pf-c-form__label-text">Part Name</span>
+            <span class="pf-c-form__label-required" aria-hidden="true">&#42;</span>
+          </label>
+          <input class="pf-c-form-control" pattern="[A-Za-z ]{1,32}" type="text" id="order.product-name" name="order.product-name" required>
+        </div>
+        <div class="pf-c-form__group">
+          <label class="pf-c-form__label" for="order.product-quantity">
+            <span class="pf-c-form__label-text">Quantity</span>
+            <span class="pf-c-form__label-required" aria-hidden="true">&#42;</span>
+          </label>
+          <input class="pf-c-form-control" pattern="[0-9]{1,3}" type="text" id="order.product-quantity" name="order.product-quantity" required>
+        </div>
+        <br>
+        <div>
+          <button style="padding-right: 1em;" id="submit-btn" onclick="orderModal.submitForm(); return false;" class="pf-c-button pf-m-primary" value="Submit" type="submit">
+            Save
+          </button>
+          <button onclick="orderModal.hide()" class="pf-c-button pf-m-secondary">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function (window) {
+    const modal = document.getElementById('new-order-modal-container')
+
+    function showErrorAlert (message) {
+      const alertEl = document.getElementById('alert-danger')
+      const alertTextEl = document.getElementById('error-text')
+
+      alertEl.classList.add('visible')
+      alertTextEl.innerHTML = message || 'Failed to submit order. Try again later.'
+
+      setTimeout(() => {
+        alertEl.classList.remove('visible')
+      }, 3000)
+    }
+
+    function setButtonDisabled (disabled) {
+      const button = document.getElementById('submit-btn')
+      button.disabled = disabled
+    }
+
+    window.orderModal = {
+      show: function () {
+        modal.classList.add('visible')
+        document.getElementById('order.product-name').focus()
+      },
+      hide: function () {
+        modal.classList.remove('visible')
+      },
+      submitForm: function () {
+        const form = document.getElementsByName('order-form')[0]
+
+        if (!form.checkValidity()) {
+          return form.reportValidity()
+        }
+
+        const button = document.getElementById('submit-btn')
+        const product = document.getElementById('order.product-name')
+        const quantity = document.getElementById('order.product-quantity')
+
+        setButtonDisabled(true)
+
+        setTimeout(() => {
+          fetch('/api/order', {
+            method: 'POST',
+            body: JSON.stringify({
+              product: product.value,
+              quantity: quantity.value
+            }),
+            headers: {
+              'content-type': 'application/json'
+            }
+          })
+            .then(async (response) => {
+              if (response.status === 400) {
+                const text = await response.text()
+                showErrorAlert(text)
+                setButtonDisabled(false)
+              } else if (response.status !== 200) {
+                showErrorAlert()
+              } else {
+                window.location.reload()
+              }
+            })
+            .catch((e) => {
+              showErrorAlert()
+              setButtonDisabled(false)
+            })
+        }, 250)
+      }
+    }
+  })(window)
+</script>

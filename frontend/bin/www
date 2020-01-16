@@ -25,7 +25,7 @@
  */
 
 const cluster = require('cluster');
-const debug = require('debug')('nodejs-messaging-work-queue-frontend:server');
+const debug = require('debug')('order-entry-ui:server');
 const http = require('http');
 var server;
 var port;

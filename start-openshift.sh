@@ -17,11 +17,5 @@ npm install
 echo "Deploying frontend"
 npm run openshift
 
-cd ../worker
-echo "Building worker"
-npm install
-echo "Deploying worker"
-npm run openshift
-
 cd ..
 open http://`oc get route nodejs-messaging-work-queue-frontend | tail -1 | cut -d ' ' -f 4`
