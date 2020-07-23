@@ -1,6 +1,6 @@
 {
    "name": "order-entry-ui",
-   "version": "5.0.0",
+   "version": "6.0.0",
    "description": "A Node.js application that serves a frontend that allows users to place orders. Orders are sent via AMQP to a queue.",
    "license": "Apache-2.0",
    "scripts": {
